@@ -12,7 +12,7 @@
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 namespace Statistics\Modules;
-function statistic($module, $interface, $date, $start_time, $offset)
+function show($module, $interface, $date, $start_time, $offset)
 {
     $err_msg = '';
     $today = date('Y-m-d');
@@ -28,10 +28,7 @@ function statistic($module, $interface, $date, $start_time, $offset)
     }
 
     $code_map = array();
-    print_r($all_st_str);
-    echo '222';
     $data = formatSt($all_st_str, $date, $code_map);
-
     $interface_name = "$module::$interface";
     $success_series_data = $fail_series_data = $success_time_series_data = $fail_time_series_data = array();
     $total_count = $fail_count = 0;
@@ -68,7 +65,6 @@ function statistic($module, $interface, $date, $start_time, $offset)
     }
 
     $table_data = $html_class = '';
-
     if($data)
     {
         $first_line = true;

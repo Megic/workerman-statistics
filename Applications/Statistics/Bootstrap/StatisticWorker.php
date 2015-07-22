@@ -32,7 +32,7 @@ class StatisticWorker extends Worker
      * 多长时间写一次数据到磁盘
      * @var integer
      */
-    const WRITE_PERIOD_LENGTH = 60;
+    const WRITE_PERIOD_LENGTH = 5;
     
     /**
      * 多长时间清理一次老的磁盘数据
@@ -171,6 +171,7 @@ class StatisticWorker extends Worker
        {
            foreach($mod_if_data as $module=>$items)
            {
+               $total=0;
                // 文件夹不存在则创建一个
                $file_dir = Config::$dataPath . $this->statisticDir.$module;
                if(!is_dir($file_dir))
@@ -182,9 +183,16 @@ class StatisticWorker extends Worker
                foreach($items as $interface=>$data)
                {
                    file_put_contents($file_dir. "/{$interface}.".date('Y-m-d'), "$ip\t$time\t{$data['suc_count']}\t{$data['suc_cost_time']}\t{$data['fail_count']}\t{$data['fail_cost_time']}\t".json_encode($data['code'])."\n", FILE_APPEND | LOCK_EX);
+                   $total+=$data['suc_count'];
+               }
+               //统计总数
+               if($total){
+                   $f = $file_dir . "/{$interface}.total";
+                   file_put_contents($f, $total+(int)file_get_contents($f,LOCK_EX),LOCK_EX);
                }
            }
        }
+
        // 清空统计
        $this->statisticData = array();
    }
@@ -229,7 +237,7 @@ class StatisticWorker extends Worker
         Timer::add(self::WRITE_PERIOD_LENGTH, array($this, 'writeStatisticsToDisk'));
         Timer::add(self::WRITE_PERIOD_LENGTH, array($this, 'writeLogToDisk'));
         // 定时清理不用的统计数据
-        Timer::add(self::CLEAR_PERIOD_LENGTH, array($this, 'clearDisk'), array(Config::$dataPath . $this->statisticDir, self::EXPIRED_TIME));
+        //Timer::add(self::CLEAR_PERIOD_LENGTH, array($this, 'clearDisk'), array(Config::$dataPath . $this->statisticDir, self::EXPIRED_TIME));
         Timer::add(self::CLEAR_PERIOD_LENGTH, array($this, 'clearDisk'), array(Config::$dataPath . $this->logDir, self::EXPIRED_TIME));
         
     }
